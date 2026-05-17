@@ -6,81 +6,335 @@
 <title>ARIA — Voice Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@300;400;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#080c14;--surface:#0f1520;--border:#1e2a3a;--accent:#4fc3f7;--accent2:#7c4dff;--text:#e8f0fe;--muted:#6b7fa3;--white:#ffffff}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;position:relative}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,195,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,195,247,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-.bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
-.orb1{width:400px;height:400px;background:rgba(79,195,247,.08);top:-100px;left:-100px}
-.orb2{width:300px;height:300px;background:rgba(124,77,255,.08);bottom:50px;right:-50px}
-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:24px 48px;border-bottom:1px solid var(--border);position:relative;z-index:10;background:rgba(8,12,20,.8);backdrop-filter:blur(20px)}
-.brand{display:flex;align-items:center;gap:12px}
-.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s infinite}
-.brand-name{font-family:'Instrument Serif',serif;font-size:22px;letter-spacing:4px;color:var(--white)}
-.brand-name span{color:var(--accent)}
-.status-badge{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:4px 12px;border-radius:20px;background:rgba(79,195,247,.08)}
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:60px 24px;position:relative;z-index:10;width:100%;max-width:800px}
-.title-section{text-align:center}
-.title-section h1{font-family:'Instrument Serif',serif;font-size:clamp(36px,6vw,64px);font-weight:400;line-height:1.1;color:var(--white);margin-bottom:12px}
-.title-section h1 em{color:var(--accent);font-style:italic}
-.title-section p{color:var(--muted);font-size:15px;letter-spacing:1px}
-.mic-area{display:flex;flex-direction:column;align-items:center;gap:20px}
-.mic-rings{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center}
-.ring{position:absolute;border-radius:50%;border:1px solid var(--accent);opacity:0}
-.ring1{width:160px;height:160px}
-.ring2{width:200px;height:200px}
-.ring3{width:240px;height:240px}
-.mic-rings.listening .ring{animation:ripple 2s ease-out infinite}
-.mic-rings.listening .ring2{animation-delay:.4s}
-.mic-rings.listening .ring3{animation-delay:.8s}
-.mic-btn{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#0f1e35,#162840);border:2px solid var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--accent);box-shadow:0 0 30px rgba(79,195,247,.2);transition:all .3s ease;position:relative;z-index:2}
-.mic-btn:hover{box-shadow:0 0 50px rgba(79,195,247,.4);transform:scale(1.05)}
-.mic-btn.listening{background:linear-gradient(135deg,#0d2a1e,#0f3525);border-color:#4ade80;color:#4ade80;box-shadow:0 0 50px rgba(74,222,128,.4);animation:micPulse 1s ease-in-out infinite}
-.mic-btn.speaking{background:linear-gradient(135deg,#1a0d2e,#250f40);border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 50px rgba(124,77,255,.4)}
-.mic-label{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);transition:color .3s}
-.mic-label.active{color:var(--accent)}
-.waveform{display:flex;align-items:center;gap:4px;height:40px;opacity:0;transition:opacity .3s}
-.waveform.active{opacity:1}
-.wave-bar{width:4px;border-radius:2px;background:var(--accent);height:8px}
-.waveform.speaking .wave-bar{background:var(--accent2)}
-.waveform.active .wave-bar{animation:wave .8s ease-in-out infinite}
-.wave-bar:nth-child(1){animation-delay:0s}.wave-bar:nth-child(2){animation-delay:.1s}.wave-bar:nth-child(3){animation-delay:.2s}.wave-bar:nth-child(4){animation-delay:.3s}.wave-bar:nth-child(5){animation-delay:.4s}.wave-bar:nth-child(6){animation-delay:.3s}.wave-bar:nth-child(7){animation-delay:.2s}.wave-bar:nth-child(8){animation-delay:.1s}.wave-bar:nth-child(9){animation-delay:0s}
-.transcript-area{width:100%;max-width:620px;display:flex;flex-direction:column;gap:16px}
-.transcript-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 24px;min-height:64px;transition:border-color .3s;position:relative;overflow:hidden}
-.transcript-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
-.transcript-box.active::before{opacity:1}
-.transcript-box.active{border-color:rgba(79,195,247,.4)}
-.box-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
-.box-label .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
-.response-box .box-label .dot{background:var(--accent2)}
-.box-text{font-size:15px;line-height:1.6;color:var(--text);font-weight:300;min-height:24px}
-.box-text.placeholder{color:var(--muted);font-style:italic}
-.commands{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:620px}
-.cmd-chip{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:8px 16px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;letter-spacing:.5px}
-.cmd-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,195,247,.05)}
-.type-area{width:100%;max-width:620px;display:flex;gap:12px}
-.type-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;font-family:'Syne',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .3s}
-.type-input::placeholder{color:var(--muted)}
-.type-input:focus{border-color:rgba(79,195,247,.5)}
-.send-btn{background:linear-gradient(135deg,var(--accent),#29b6f6);border:none;border-radius:12px;padding:14px 24px;color:var(--bg);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.send-btn:hover{opacity:.85;transform:translateY(-1px)}
-footer{padding:20px;text-align:center;color:var(--muted);font-size:11px;letter-spacing:1px;position:relative;z-index:10}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 12px var(--accent)}50%{opacity:.5;box-shadow:0 0 4px var(--accent)}}
-@keyframes ripple{0%{opacity:.6;transform:scale(.8)}100%{opacity:0;transform:scale(1.3)}}
-@keyframes wave{0%,100%{height:8px}50%{height:32px}}
-@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn .6s ease forwards}
-.typing{display:inline-flex;gap:4px;align-items:center}
-.typing span{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:typingDot 1.2s ease-in-out infinite}
-.typing span:nth-child(2){animation-delay:.2s}
-.typing span:nth-child(3){animation-delay:.4s}
-@keyframes typingDot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+  :root {
+    --bg: #080c14;
+    --surface: #0f1520;
+    --border: #1e2a3a;
+    --accent: #4fc3f7;
+    --accent2: #7c4dff;
+    --glow: #4fc3f766;
+    --text: #e8f0fe;
+    --muted: #6b7fa3;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(79,195,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,195,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glowing orb background */
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { width: 400px; height: 400px; background: rgba(79,195,247,0.08); top: -100px; left: -100px; }
+  .orb2 { width: 300px; height: 300px; background: rgba(124,77,255,0.08); bottom: 50px; right: -50px; }
+
+  /* HEADER */
+  header {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 48px;
+    border-bottom: 1px solid var(--border);
+    position: relative; z-index: 10;
+    background: rgba(8,12,20,0.8);
+    backdrop-filter: blur(20px);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  .brand-name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--white);
+  }
+  .brand-name span { color: var(--accent); }
+  .status-badge {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 4px 12px; border-radius: 20px;
+    background: rgba(79,195,247,0.08);
+  }
+
+  /* MAIN */
+  main {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 48px;
+    padding: 60px 24px;
+    position: relative; z-index: 10;
+    width: 100%; max-width: 800px;
+  }
+
+  .title-section { text-align: center; }
+  .title-section h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .title-section h1 em { color: var(--accent); font-style: italic; }
+  .title-section p {
+    color: var(--muted); font-size: 15px; letter-spacing: 1px;
+    font-weight: 300;
+  }
+
+  /* MIC BUTTON */
+  .mic-area { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+  .mic-rings {
+    position: relative; width: 160px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid var(--accent);
+    opacity: 0;
+    animation: none;
+  }
+  .ring1 { width: 160px; height: 160px; }
+  .ring2 { width: 200px; height: 200px; }
+  .ring3 { width: 240px; height: 240px; }
+
+  .mic-rings.listening .ring {
+    animation: ripple 2s ease-out infinite;
+  }
+  .mic-rings.listening .ring2 { animation-delay: 0.4s; }
+  .mic-rings.listening .ring3 { animation-delay: 0.8s; }
+
+  .mic-btn {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: linear-gradient(135deg, #0f1e35, #162840);
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    color: var(--accent);
+    box-shadow: 0 0 30px rgba(79,195,247,0.2), inset 0 0 20px rgba(79,195,247,0.05);
+    transition: all 0.3s ease;
+    position: relative; z-index: 2;
+  }
+  .mic-btn:hover {
+    box-shadow: 0 0 50px rgba(79,195,247,0.4), inset 0 0 30px rgba(79,195,247,0.1);
+    transform: scale(1.05);
+  }
+  .mic-btn.listening {
+    background: linear-gradient(135deg, #0d2a1e, #0f3525);
+    border-color: #4ade80;
+    color: #4ade80;
+    box-shadow: 0 0 50px rgba(74,222,128,0.4);
+    animation: micPulse 1s ease-in-out infinite;
+  }
+  .mic-btn.speaking {
+    background: linear-gradient(135deg, #1a0d2e, #250f40);
+    border-color: var(--accent2);
+    color: var(--accent2);
+    box-shadow: 0 0 50px rgba(124,77,255,0.4);
+  }
+
+  .mic-label {
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); font-weight: 400;
+    transition: color 0.3s;
+  }
+  .mic-label.active { color: var(--accent); }
+
+  /* WAVEFORM */
+  .waveform {
+    display: flex; align-items: center; gap: 4px; height: 40px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .waveform.active { opacity: 1; }
+  .wave-bar {
+    width: 4px; border-radius: 2px;
+    background: var(--accent);
+    animation: none;
+    height: 8px;
+    transition: background 0.3s;
+  }
+  .waveform.speaking .wave-bar { background: var(--accent2); }
+  .waveform.active .wave-bar { animation: wave 0.8s ease-in-out infinite; }
+  .wave-bar:nth-child(1) { animation-delay: 0s; }
+  .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+  .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+  .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+  .wave-bar:nth-child(6) { animation-delay: 0.3s; }
+  .wave-bar:nth-child(7) { animation-delay: 0.2s; }
+  .wave-bar:nth-child(8) { animation-delay: 0.1s; }
+  .wave-bar:nth-child(9) { animation-delay: 0s; }
+
+  /* TRANSCRIPT BOX */
+  .transcript-area {
+    width: 100%; max-width: 620px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .transcript-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    min-height: 64px;
+    transition: border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .transcript-box::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .transcript-box.active::before { opacity: 1; }
+  .transcript-box.active { border-color: rgba(79,195,247,0.4); }
+
+  .box-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .box-label .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .response-box .box-label .dot { background: var(--accent2); }
+
+  .box-text {
+    font-size: 15px; line-height: 1.6; color: var(--text);
+    font-weight: 300; min-height: 24px;
+  }
+  .box-text.placeholder { color: var(--muted); font-style: italic; }
+
+  /* QUICK COMMANDS */
+  .commands {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    max-width: 620px;
+  }
+  .cmd-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 8px 16px;
+    font-size: 12px; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .cmd-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79,195,247,0.05);
+  }
+
+  /* TYPE INPUT */
+  .type-area {
+    width: 100%; max-width: 620px;
+    display: flex; gap: 12px;
+  }
+  .type-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.3s;
+  }
+  .type-input::placeholder { color: var(--muted); }
+  .type-input:focus { border-color: rgba(79,195,247,0.5); }
+  .send-btn {
+    background: linear-gradient(135deg, var(--accent), #29b6f6);
+    border: none; border-radius: 12px;
+    padding: 14px 24px;
+    color: var(--bg); font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .send-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* FOOTER */
+  footer {
+    padding: 20px; text-align: center;
+    color: var(--muted); font-size: 11px; letter-spacing: 1px;
+    position: relative; z-index: 10;
+  }
+
+  /* ANIMATIONS */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--accent); }
+    50% { opacity: 0.5; box-shadow: 0 0 4px var(--accent); }
+  }
+  @keyframes ripple {
+    0% { opacity: 0.6; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+  @keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 32px; }
+  }
+  @keyframes micPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeIn 0.6s ease forwards; }
+
+  /* Typing dots */
+  .typing { display: inline-flex; gap: 4px; align-items: center; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent2);
+    animation: typingDot 1.2s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
 </style>
 </head>
 <body>
+
 <div class="bg-orb orb1"></div>
 <div class="bg-orb orb2"></div>
+
 <header>
   <div class="brand">
     <div class="brand-dot"></div>
@@ -88,17 +342,22 @@ footer{padding:20px;text-align:center;color:var(--muted);font-size:11px;letter-s
   </div>
   <div class="status-badge">AI Voice Assistant</div>
 </header>
+
 <main>
   <div class="title-section fade-in">
     <h1>Hello, I'm <em>ARIA</em></h1>
     <p>Your intelligent voice assistant — speak or type to begin</p>
   </div>
+
+  <!-- MIC -->
   <div class="mic-area">
     <div class="mic-rings" id="micRings">
       <div class="ring ring1"></div>
       <div class="ring ring2"></div>
       <div class="ring ring3"></div>
-      <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
+      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Click to speak">
+        🎙️
+      </button>
     </div>
     <div class="waveform" id="waveform">
       <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
@@ -107,249 +366,232 @@ footer{padding:20px;text-align:center;color:var(--muted);font-size:11px;letter-s
     </div>
     <div class="mic-label" id="micLabel">Click to Speak</div>
   </div>
+
+  <!-- TRANSCRIPT -->
   <div class="transcript-area">
     <div class="transcript-box" id="youBox">
       <div class="box-label"><div class="dot"></div> You said</div>
       <div class="box-text placeholder" id="youText">Your words will appear here...</div>
     </div>
     <div class="transcript-box response-box" id="ariaBox">
-      <div class="box-label"><div class="dot" style="background:var(--accent2)"></div> ARIA</div>
+      <div class="box-label" style="color:var(--muted)"><div class="dot" style="background:var(--accent2)"></div> ARIA</div>
       <div class="box-text placeholder" id="ariaText">ARIA's response will appear here...</div>
     </div>
   </div>
+
+  <!-- QUICK COMMANDS -->
   <div class="commands">
-    <div class="cmd-chip" onclick="ask('What is artificial intelligence?')">🤖 What is AI?</div>
-    <div class="cmd-chip" onclick="ask('What is BCA?')">🎓 What is BCA?</div>
-    <div class="cmd-chip" onclick="ask('What is the internet?')">🌐 Internet</div>
-    <div class="cmd-chip" onclick="ask('Tell me a joke')">😄 Tell a Joke</div>
-    <div class="cmd-chip" onclick="ask('What is todays date?')">📅 Today Date</div>
-    <div class="cmd-chip" onclick="ask('What is HTML?')">💻 What is HTML?</div>
-    <div class="cmd-chip" onclick="ask('What is Python?')">🐍 Python</div>
-    <div class="cmd-chip" onclick="ask('What is machine learning?')">🧠 Machine Learning</div>
+    <div class="cmd-chip" onclick="askQuick('What is artificial intelligence?')">🤖 What is AI?</div>
+    <div class="cmd-chip" onclick="askQuick('Tell me a fun fact')">💡 Fun Fact</div>
+    <div class="cmd-chip" onclick="askQuick('What is today\'s date?')">📅 Today\'s Date</div>
+    <div class="cmd-chip" onclick="askQuick('Tell me a joke')">😄 Tell a Joke</div>
+    <div class="cmd-chip" onclick="askQuick('What is the capital of India?')">🌍 Capital of India</div>
+    <div class="cmd-chip" onclick="askQuick('How does a computer work?')">💻 How Computers Work</div>
   </div>
+
+  <!-- TYPE INPUT -->
   <div class="type-area">
-    <input type="text" class="type-input" id="typeInput" placeholder="Or type your question here..." onkeydown="if(event.key==='Enter')sendTyped()"/>
+    <input type="text" class="type-input" id="typeInput" placeholder="Or type your question here..." onkeydown="if(event.key==='Enter') sendTyped()"/>
     <button class="send-btn" onclick="sendTyped()">SEND ↗</button>
   </div>
 </main>
-<footer>ARIA Voice Assistant &nbsp;·&nbsp; BCA Final Year Project</footer>
+
+<footer>ARIA Voice Assistant &nbsp;·&nbsp; BCA Final Year Project &nbsp;·&nbsp; Built with Web Speech API + AI</footer>
 
 <script>
-var recognition = null;
-var isListening = false;
-var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(SR){
-  recognition = new SR();
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.lang = 'en-IN';
-  recognition.onresult = function(e){
-    var t = Array.from(e.results).map(function(r){return r[0].transcript}).join('');
-    setYou(t);
-    if(e.results[e.results.length-1].isFinal){stopListen();respond(t);}
-  };
-  recognition.onerror = function(){stopListen();setAria("Sorry I could not hear that. Please try typing your question below!");};
-  recognition.onend = function(){if(isListening)stopListen();};
-}
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+  let isSpeaking = false;
 
-function toggleMic(){
-  if(!SR){alert("Please use Google Chrome browser for voice input!");return;}
-  if(isListening)stopListen(); else startListen();
-}
-function startListen(){
-  isListening=true;
-  recognition.start();
-  document.getElementById('micBtn').className='mic-btn listening';
-  document.getElementById('micBtn').textContent='🔴';
-  document.getElementById('micRings').classList.add('listening');
-  document.getElementById('micLabel').textContent='Listening...';
-  document.getElementById('micLabel').classList.add('active');
-  document.getElementById('waveform').classList.add('active');
-  document.getElementById('youBox').classList.add('active');
-  document.getElementById('youText').textContent='Listening...';
-  document.getElementById('youText').classList.remove('placeholder');
-}
-function stopListen(){
-  isListening=false;
-  try{recognition.stop();}catch(e){}
-  document.getElementById('micBtn').className='mic-btn';
-  document.getElementById('micBtn').textContent='🎙️';
-  document.getElementById('micRings').classList.remove('listening');
-  document.getElementById('micLabel').textContent='Click to Speak';
-  document.getElementById('micLabel').classList.remove('active');
-  document.getElementById('waveform').classList.remove('active');
-  document.getElementById('youBox').classList.remove('active');
-}
-function setYou(t){
-  document.getElementById('youText').textContent=t;
-  document.getElementById('youText').classList.remove('placeholder');
-}
-function setAria(t){
-  document.getElementById('ariaText').textContent=t;
-  document.getElementById('ariaText').classList.remove('placeholder');
-}
-function showTyping(){
-  document.getElementById('ariaText').innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
-  document.getElementById('ariaText').classList.remove('placeholder');
-  document.getElementById('ariaBox').classList.add('active');
-}
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-IN';
 
-function respond(query){
-  showTyping();
-  document.getElementById('micBtn').className='mic-btn speaking';
-  document.getElementById('micBtn').textContent='💜';
-  document.getElementById('waveform').classList.add('active','speaking');
-  var GEMINI_KEY = 'AIzaSyAJMGXVckJuDeeIF6VrnKK_ovZbXIG4TVI';
-  fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_KEY, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      contents: [{parts: [{text: 'You are ARIA, a friendly voice assistant for a BCA college project. Answer in 2 to 3 sentences only. No bullet points, no markdown, just plain natural spoken sentences. Question: ' + query}]}]
-    })
-  })
-  .then(function(r){return r.json();})
-  .then(function(data){
-    var reply = data.candidates[0].content.parts[0].text;
-    setAria(reply);
+    recognition.onresult = (e) => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+      setYouText(transcript);
+      if (e.results[e.results.length - 1].isFinal) {
+        stopListening();
+        getAIResponse(transcript);
+      }
+    };
+
+    recognition.onerror = (e) => {
+      stopListening();
+      setAriaText("Sorry, I couldn't hear that. Please try again or type your question!");
+    };
+
+    recognition.onend = () => { if (isListening) stopListening(); };
+  }
+
+  function toggleMic() {
+    if (!SpeechRecognition) {
+      alert("Your browser doesn't support voice recognition. Please use Chrome browser!");
+      return;
+    }
+    if (isListening) stopListening();
+    else startListening();
+  }
+
+  function startListening() {
+    isListening = true;
+    recognition.start();
+    document.getElementById('micBtn').className = 'mic-btn listening';
+    document.getElementById('micBtn').textContent = '🔴';
+    document.getElementById('micRings').classList.add('listening');
+    document.getElementById('micLabel').textContent = 'Listening...';
+    document.getElementById('micLabel').classList.add('active');
+    document.getElementById('waveform').classList.add('active');
+    document.getElementById('youBox').classList.add('active');
+    setYouText('');
+    document.getElementById('youText').classList.remove('placeholder');
+  }
+
+  function stopListening() {
+    isListening = false;
+    try { recognition.stop(); } catch(e) {}
+    document.getElementById('micBtn').className = 'mic-btn';
+    document.getElementById('micBtn').textContent = '🎙️';
+    document.getElementById('micRings').classList.remove('listening');
+    document.getElementById('micLabel').textContent = 'Click to Speak';
+    document.getElementById('micLabel').classList.remove('active');
+    document.getElementById('waveform').classList.remove('active');
+    document.getElementById('youBox').classList.remove('active');
+  }
+
+  function setYouText(text) {
+    const el = document.getElementById('youText');
+    if (text) { el.textContent = text; el.classList.remove('placeholder'); }
+    else { el.textContent = 'Listening...'; el.classList.remove('placeholder'); }
+  }
+
+  function setAriaText(text) {
+    const el = document.getElementById('ariaText');
+    el.textContent = text;
+    el.classList.remove('placeholder');
+  }
+
+  function showTyping() {
+    const el = document.getElementById('ariaText');
+    el.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    el.classList.remove('placeholder');
+    document.getElementById('ariaBox').classList.add('active');
+  }
+
+  async function getAIResponse(query) {
+    showTyping();
+    document.getElementById('micBtn').className = 'mic-btn speaking';
+    document.getElementById('micBtn').textContent = '💜';
+    document.getElementById('waveform').classList.add('active', 'speaking');
+
+    await new Promise(r => setTimeout(r, 800));
+
+    const reply = getSmartAnswer(query);
+    setAriaText(reply);
     speak(reply);
-    document.getElementById('micBtn').className='mic-btn';
-    document.getElementById('micBtn').textContent='🎙️';
-    document.getElementById('waveform').classList.remove('active','speaking');
+
+    document.getElementById('micBtn').className = 'mic-btn';
+    document.getElementById('micBtn').textContent = '🎙️';
+    document.getElementById('waveform').classList.remove('active', 'speaking');
     document.getElementById('ariaBox').classList.remove('active');
-  })
-  .catch(function(){
-    var reply = getAnswer(query);
-    setAria(reply);
-    speak(reply);
-    document.getElementById('micBtn').className='mic-btn';
-    document.getElementById('micBtn').textContent='🎙️';
-    document.getElementById('waveform').classList.remove('active','speaking');
-    document.getElementById('ariaBox').classList.remove('active');
-  });
-}
+  }
 
-function getAnswer(query){
-  var q = query.toLowerCase();
+  function getSmartAnswer(query) {
+    const q = query.toLowerCase();
 
-  // Greetings
-  if(q.match(/\b(hello|hi|hey)\b/)) return "Hello! I am ARIA, your intelligent voice assistant. How can I help you today?";
-  if(q.includes('how are you')) return "I am doing great and ready to help you! What would you like to know?";
-  if(q.includes('your name') || q.includes('who are you')) return "I am ARIA, which stands for Artificial Responsive Intelligent Assistant. I am your smart voice assistant built for this BCA final year project!";
-  if(q.includes('who made you') || q.includes('who created you') || q.includes('who built you')) return "I was created as a BCA Final Year Project using HTML, CSS, JavaScript, and the Web Speech API!";
-  if(q.includes('thank')) return "You are welcome! Feel free to ask me anything anytime!";
-  if(q.includes('bye') || q.includes('goodbye')) return "Goodbye! Have a great day. Come back anytime you need help!";
-  if(q.includes('what can you do') || q.includes('your features')) return "I can answer questions about BCA subjects, computers, internet, AI, programming languages, and general knowledge. I can also listen to your voice and speak back to you!";
+    if (q.includes('hello') || q.includes('hi') || q.includes('hey')) return "Hello! I am ARIA, your intelligent voice assistant. How can I help you today?";
+    if (q.includes('how are you')) return "I am doing great and ready to help you! What would you like to know?";
+    if (q.includes('your name') || q.includes('who are you')) return "I am ARIA, Artificial Responsive Intelligent Assistant. I am your smart voice assistant built for this BCA final year project!";
+    if (q.includes('thank')) return "You are welcome! Feel free to ask me anything anytime!";
+    if (q.includes('bye') || q.includes('goodbye')) return "Goodbye! Have a great day ahead. Come back anytime you need help!";
+    if (q.includes('date') || q.includes('today')) return "Today is " + new Date().toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    if (q.includes('time')) return "The current time is " + new Date().toLocaleTimeString('en-IN');
+    if (q.includes('year')) return "The current year is " + new Date().getFullYear();
 
-  // Date and Time
-  if(q.includes('date') || q.includes('today')) return "Today is " + new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  if(q.includes('time')) return "The current time is " + new Date().toLocaleTimeString('en-IN');
-  if(q.includes('year')) return "The current year is " + new Date().getFullYear();
+    if (q.includes('bca')) return "BCA stands for Bachelor of Computer Applications. It is a 3 year undergraduate degree program that covers programming, databases, networking, and software development.";
+    if (q.includes('c programming') || q.includes('c language')) return "C is a general purpose programming language developed by Dennis Ritchie in 1972. It is the mother of all programming languages and is widely used in system programming.";
+    if (q.includes('c++')) return "C++ is an object oriented programming language developed by Bjarne Stroustrup. It extends C with features like classes, objects, and inheritance.";
+    if (q.includes('java')) return "Java is a high level object oriented programming language. It follows the principle of Write Once Run Anywhere, meaning Java programs can run on any device.";
+    if (q.includes('python')) return "Python is a high level easy to learn programming language created by Guido van Rossum. It is widely used in AI, machine learning, web development, and data science.";
+    if (q.includes('html')) return "HTML stands for HyperText Markup Language. It is the standard language used to create and structure web pages on the internet.";
+    if (q.includes('css')) return "CSS stands for Cascading Style Sheets. It is used to style and design HTML web pages by controlling colors, fonts, layouts, and animations.";
+    if (q.includes('javascript') || q.includes(' js ')) return "JavaScript is a programming language used to make websites interactive and dynamic. It runs directly in the browser and is essential for modern web development.";
+    if (q.includes('data structure')) return "Data structures are ways of organizing and storing data in a computer. Common examples include arrays, linked lists, stacks, queues, and trees.";
+    if (q.includes('algorithm')) return "An algorithm is a step by step set of instructions to solve a problem. It is the foundation of all computer programming and problem solving.";
+    if (q.includes('dbms') || q.includes('database management')) return "DBMS stands for Database Management System. It is software that allows users to create, manage, and access databases. Examples include MySQL, Oracle, and SQL Server.";
+    if (q.includes('sql')) return "SQL stands for Structured Query Language. It is used to communicate with databases and allows you to create, read, update, and delete data.";
+    if (q.includes('operating system') || q.includes(' os ')) return "An operating system manages computer hardware and software resources. Examples include Windows, macOS, Linux, and Android.";
+    if (q.includes('object oriented') || q.includes('oops')) return "Object Oriented Programming is based on objects and classes. Its four main principles are Encapsulation, Inheritance, Polymorphism, and Abstraction.";
+    if (q.includes('software engineering')) return "Software Engineering is the process of designing, developing, testing, and maintaining software using engineering principles.";
+    if (q.includes('network') || q.includes('networking')) return "Computer networking connects computers and devices to share data. Networks can be LAN, WAN, or MAN based on their size and coverage area.";
+    if (q.includes('compiler')) return "A compiler translates high level programming code into machine language. Examples include GCC for C and Javac for Java.";
+    if (q.includes('web development') || q.includes('web dev')) return "Web development is building websites and web applications. It includes front end using HTML CSS JavaScript and back end using PHP, Python, or Node.js.";
 
-  // BCA Subjects
-  if(q.includes('bca')) return "BCA stands for Bachelor of Computer Applications. It is a 3 year undergraduate degree that covers programming, databases, networking, software development, and computer applications.";
-  if(q.includes('mca')) return "MCA stands for Master of Computer Applications. It is a 2 year postgraduate degree in computer science, usually done after completing BCA.";
-  if(q.includes('c programming') || q.includes('c language') || q == 'what is c') return "C is a general purpose programming language developed by Dennis Ritchie in 1972. It is called the mother of all programming languages and is used in system programming and embedded systems.";
-  if(q.includes('c++')) return "C++ is an object oriented programming language developed by Bjarne Stroustrup. It extends C with features like classes, objects, inheritance, and polymorphism.";
-  if(q.includes('java')) return "Java is a high level object oriented programming language. It follows the principle of Write Once Run Anywhere, meaning Java programs can run on any platform without recompilation.";
-  if(q.includes('python')) return "Python is a high level easy to learn programming language created by Guido van Rossum in 1991. It is widely used in AI, machine learning, web development, and data science.";
-  if(q.includes('html')) return "HTML stands for HyperText Markup Language. It is the standard language used to create and structure web pages. It uses tags like head, body, paragraph, and heading to organize content.";
-  if(q.includes('css')) return "CSS stands for Cascading Style Sheets. It is used to style HTML web pages by controlling colors, fonts, layouts, animations, and the overall visual appearance.";
-  if(q.includes('javascript') || q.includes(' js')) return "JavaScript is a programming language that makes websites interactive and dynamic. It runs directly in the browser and is one of the three core technologies of the web along with HTML and CSS.";
-  if(q.includes('php')) return "PHP is a server side scripting language used for web development. It is used to create dynamic web pages and is commonly used with MySQL database for back end development.";
-  if(q.includes('data structure')) return "Data structures are ways of organizing and storing data so it can be accessed efficiently. Common examples include arrays, linked lists, stacks, queues, trees, and graphs.";
-  if(q.includes('algorithm')) return "An algorithm is a step by step set of instructions to solve a problem or complete a task. Good algorithms are efficient, clear, and produce correct results for all valid inputs.";
-  if(q.includes('dbms') || q.includes('database management')) return "DBMS stands for Database Management System. It is software that stores, manages, and retrieves data efficiently. Popular examples include MySQL, Oracle, PostgreSQL, and Microsoft SQL Server.";
-  if(q.includes('sql')) return "SQL stands for Structured Query Language. It is used to communicate with relational databases. Common SQL commands include SELECT, INSERT, UPDATE, DELETE, and CREATE.";
-  if(q.includes('mysql')) return "MySQL is a popular open source relational database management system. It stores data in tables and uses SQL for querying. It is widely used in web applications and is free to use.";
-  if(q.includes('operating system') || q.includes(' os ') || q == 'what is os') return "An operating system is system software that manages computer hardware and software resources. It acts as an interface between the user and hardware. Examples include Windows, macOS, Linux, and Android.";
-  if(q.includes('object oriented') || q.includes('oops') || q.includes('oop')) return "Object Oriented Programming organizes code using objects and classes. Its four main principles are Encapsulation which hides data, Inheritance which reuses code, Polymorphism which allows multiple forms, and Abstraction which hides complexity.";
-  if(q.includes('software engineering')) return "Software Engineering is the systematic process of designing, developing, testing, and maintaining software. It applies engineering principles to create reliable, efficient, and maintainable software systems.";
-  if(q.includes('compiler')) return "A compiler is a program that translates high level source code into machine language that the computer can execute. Examples include GCC for C language and Javac for Java.";
-  if(q.includes('web development') || q.includes('web dev')) return "Web development is the process of building websites and web applications. Front end development uses HTML, CSS, and JavaScript. Back end development uses languages like PHP, Python, Node.js, and databases.";
-  if(q.includes('mobile app') || q.includes('android')) return "Mobile app development creates applications for smartphones and tablets. Android apps are built using Java or Kotlin, while iOS apps use Swift. React Native and Flutter allow cross platform development.";
+    if (q.includes('internet')) return "The internet is a global network of computers connected together to share information and communicate. It was developed in the 1960s as ARPANET.";
+    if (q.includes('www') || q.includes('world wide web')) return "The World Wide Web is a system of interlinked web pages accessed through the internet. It was invented by Tim Berners-Lee in 1989.";
+    if (q.includes('ip address')) return "An IP address is a unique numerical label assigned to every device on a network. It works like a home address, helping computers find and communicate with each other.";
+    if (q.includes('http') || q.includes('https')) return "HTTP stands for HyperText Transfer Protocol. It is the foundation of data communication on the web. HTTPS is the secure version that encrypts data.";
+    if (q.includes('browser')) return "A web browser is used to access websites on the internet. Popular browsers include Google Chrome, Mozilla Firefox, Safari, and Microsoft Edge.";
+    if (q.includes('search engine')) return "A search engine helps users find information on the internet. Google, Bing, and Yahoo are popular search engines used by billions of people daily.";
+    if (q.includes('email')) return "Email stands for Electronic Mail. It is a method of sending digital messages over the internet. Gmail, Yahoo Mail, and Outlook are popular email services.";
+    if (q.includes('wifi') || q.includes('wi-fi')) return "Wi-Fi is a wireless networking technology that allows devices to connect to the internet without cables. It uses radio waves to transmit data between devices and a router.";
+    if (q.includes('cloud')) return "Cloud computing delivers computing services like storage and software over the internet. Examples include Google Drive, Amazon AWS, and Microsoft Azure.";
+    if (q.includes('cybersecurity') || q.includes('cyber security')) return "Cybersecurity protects computers, networks, and data from digital attacks. It includes techniques like encryption, firewalls, and antivirus software.";
+    if (q.includes('virus') || q.includes('malware')) return "A computer virus is malicious software that spreads to other computers causing damage. Antivirus software is used to detect and remove viruses.";
+    if (q.includes('firewall')) return "A firewall is a network security system that monitors and controls incoming and outgoing network traffic. It protects networks from unauthorized access.";
+    if (q.includes('bandwidth')) return "Bandwidth is the maximum amount of data that can be transmitted over a network in a given time. It is measured in Megabits per second or Mbps.";
+    if (q.includes('server')) return "A server is a powerful computer that provides data or services to other computers on a network. Web servers host websites, and mail servers handle emails.";
+    if (q.includes('domain')) return "A domain name is the unique address of a website like google.com or facebook.com. It makes it easy for people to find websites without remembering IP addresses.";
 
-  // Internet Topics
-  if(q.includes('internet')) return "The internet is a global network of billions of computers connected together to share information and communicate. It was originally developed in the 1960s by the US government as ARPANET.";
-  if(q.includes('www') || q.includes('world wide web')) return "The World Wide Web is a system of interlinked web pages and resources that are accessed through the internet using a web browser. It was invented by Tim Berners-Lee in 1989.";
-  if(q.includes('ip address')) return "An IP address is a unique numerical label assigned to every device connected to a network. It works like a home address, identifying where to send and receive data. Example format is 192.168.1.1.";
-  if(q.includes('http') || q.includes('https')) return "HTTP stands for HyperText Transfer Protocol. It is the foundation of data communication on the web. HTTPS is the secure version that encrypts data using SSL or TLS to protect privacy.";
-  if(q.includes('browser') || q.includes('web browser')) return "A web browser is a software application used to access and view websites on the internet. Popular browsers include Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari.";
-  if(q.includes('search engine')) return "A search engine is a web service that finds information on the internet by searching billions of web pages. Google is the most popular search engine, followed by Bing, Yahoo, and DuckDuckGo.";
-  if(q.includes('email') || q.includes('e-mail')) return "Email stands for Electronic Mail. It is a method of sending and receiving digital messages over the internet instantly. Popular email services include Gmail, Yahoo Mail, Outlook, and Hotmail.";
-  if(q.includes('wifi') || q.includes('wi-fi')) return "Wi-Fi is a wireless networking technology that allows devices to connect to the internet without physical cables. It uses radio waves to transmit data between devices and a wireless router.";
-  if(q.includes('cloud computing') || q.includes('cloud storage')) return "Cloud computing delivers computing services like storage, servers, databases, and software over the internet. Examples include Google Drive, Dropbox, Amazon AWS, and Microsoft Azure.";
-  if(q.includes('cybersecurity') || q.includes('cyber security') || q.includes('information security')) return "Cybersecurity is the practice of protecting computers, networks, and data from digital attacks and unauthorized access. It includes firewalls, encryption, antivirus software, and secure passwords.";
-  if(q.includes('virus') || q.includes('malware')) return "A computer virus is malicious software that replicates itself and spreads to other computers, causing damage to files and systems. Antivirus software like Norton, Avast, and Windows Defender helps protect against viruses.";
-  if(q.includes('firewall')) return "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on security rules. It acts as a barrier between a trusted internal network and untrusted external networks.";
-  if(q.includes('bandwidth')) return "Bandwidth is the maximum amount of data that can be transmitted over a network connection per second. It is measured in Megabits per second or Mbps. Higher bandwidth means faster internet speeds.";
-  if(q.includes('server')) return "A server is a powerful computer that provides data, resources, or services to other computers called clients over a network. Web servers host websites, mail servers handle emails, and file servers store files.";
-  if(q.includes('domain name') || q.includes('domain')) return "A domain name is the unique address of a website on the internet, such as google.com or facebook.com. It makes it easy to find websites without remembering complex IP addresses.";
-  if(q.includes('protocol')) return "A network protocol is a set of rules that govern how data is transmitted between devices on a network. Common protocols include TCP, IP, HTTP, FTP, SMTP, and DNS.";
-  if(q.includes('dns')) return "DNS stands for Domain Name System. It works like a phone book for the internet, translating human readable domain names like google.com into IP addresses that computers can understand.";
-  if(q.includes('ftp')) return "FTP stands for File Transfer Protocol. It is used to transfer files between computers over a network. It allows users to upload and download files from a server.";
-  if(q.includes('vpn')) return "VPN stands for Virtual Private Network. It creates a secure encrypted connection over the internet, protecting your privacy and allowing you to browse anonymously or access restricted content.";
-  if(q.includes('router')) return "A router is a networking device that forwards data packets between computer networks. It connects your home devices to the internet and directs internet traffic to the correct devices.";
-  if(q.includes('modem')) return "A modem is a device that connects your home network to the internet through your internet service provider. It converts digital signals to analog and back for internet communication.";
+    if (q.includes('artificial intelligence') || q.includes(' ai ') or q == 'what is ai') return "Artificial Intelligence is the simulation of human intelligence in machines. It enables computers to learn and solve problems. Examples include voice assistants, self-driving cars, and recommendation systems.";
+    if (q.includes('machine learning')) return "Machine Learning is a branch of AI where computers learn from data without being explicitly programmed. It powers recommendation systems, fraud detection, and image recognition.";
+    if (q.includes('deep learning')) return "Deep Learning uses neural networks with many layers to learn from large amounts of data. It is used in image recognition, natural language processing, and speech recognition.";
+    if (q.includes('chatbot')) return "A chatbot is a computer program designed to simulate conversation with humans. I, ARIA, am also a type of voice based chatbot built for this BCA project!";
+    if (q.includes('blockchain')) return "Blockchain is a decentralized digital ledger that records transactions across many computers. It is the technology behind cryptocurrencies like Bitcoin.";
 
-  // AI and Technology
-  if(q.includes('artificial intelligence') || q == 'what is ai' || q.includes('what is ai')) return "Artificial Intelligence is the simulation of human intelligence in machines. It enables computers to learn, reason, and solve problems like humans. Examples include voice assistants, self-driving cars, and recommendation systems.";
-  if(q.includes('machine learning')) return "Machine Learning is a branch of AI where computers automatically learn from data and improve without being explicitly programmed. It powers spam filters, recommendation systems, and fraud detection.";
-  if(q.includes('deep learning')) return "Deep Learning is a type of machine learning that uses neural networks with many layers to learn from large amounts of data. It is used in image recognition, speech recognition, and natural language processing.";
-  if(q.includes('natural language') || q.includes('nlp')) return "Natural Language Processing or NLP is a branch of AI that helps computers understand, interpret, and generate human language. It powers chatbots, translation tools, and voice assistants like me!";
-  if(q.includes('chatbot')) return "A chatbot is a computer program designed to simulate conversation with humans. It uses AI and NLP to understand questions and provide relevant answers. I, ARIA, am a voice based chatbot!";
-  if(q.includes('robot') || q.includes('robotics')) return "Robotics is the field of technology that designs, builds, and operates robots. Robots are used in manufacturing, surgery, space exploration, agriculture, and many other fields.";
-  if(q.includes('virtual reality') || q.includes(' vr ')) return "Virtual Reality creates an immersive simulated three dimensional environment that users can interact with using VR headsets. It is used in gaming, education, medical training, and architecture.";
-  if(q.includes('augmented reality') || q.includes(' ar ')) return "Augmented Reality overlays digital information onto the real world using a camera. Popular examples include Pokemon Go, Snapchat filters, and navigation apps that show directions on camera view.";
-  if(q.includes('blockchain')) return "Blockchain is a decentralized digital ledger that records transactions across many computers in a secure and transparent way. It is the technology behind Bitcoin and other cryptocurrencies.";
-  if(q.includes('bitcoin') || q.includes('cryptocurrency')) return "Bitcoin is a digital currency that uses blockchain technology. It operates without a central bank and allows peer to peer transactions. It was created in 2009 by an anonymous person named Satoshi Nakamoto.";
-  if(q.includes('internet of things') || q.includes('iot')) return "Internet of Things or IoT refers to everyday physical devices connected to the internet and sharing data. Examples include smart TVs, smart watches, fitness trackers, and smart home devices.";
-  if(q.includes('big data')) return "Big Data refers to extremely large datasets that cannot be processed by traditional methods. It is analyzed using tools like Hadoop and Spark to find patterns and insights for business decisions.";
-  if(q.includes('computer')) return "A computer is an electronic device that processes data and performs calculations. It consists of hardware like CPU, RAM, hard drive, and input output devices, and runs software programs.";
-  if(q.includes('cpu') || q.includes('processor')) return "CPU stands for Central Processing Unit. It is the brain of the computer that executes instructions and processes data. Modern CPUs can perform billions of operations per second.";
-  if(q.includes('ram') || q.includes('random access memory')) return "RAM stands for Random Access Memory. It is temporary memory that stores data currently being used by the computer. More RAM means the computer can run more programs simultaneously.";
-  if(q.includes('hard disk') || q.includes('hard drive') || q.includes('storage')) return "A hard disk or hard drive is the main storage device in a computer where all files, programs, and the operating system are permanently stored. Modern computers also use faster SSD storage.";
+    if (q.includes('capital of india')) return "New Delhi is the capital of India. It is located in the northern part of the country and serves as the seat of the Indian government.";
+    if (q.includes('joke')) return "Why do programmers prefer dark mode? Because light attracts bugs!";
+    if (q.includes('fun fact')) return "Here is a fun fact! The first computer bug was an actual real bug. In 1947, Grace Hopper found a moth stuck in a Harvard computer, and that is where the term debugging comes from!";
+    if (q.includes('who made you') || q.includes('who created you') || q.includes('who built you')) return "I was created as a BCA Final Year Project using HTML, CSS, JavaScript, and the Web Speech API. My developer built me to demonstrate the power of AI voice assistants!";
+    if (q.includes('computer')) return "A computer processes data through a CPU, stores information in memory, and communicates through input and output devices. It is the most important tool in modern technology.";
 
-  // General Knowledge
-  if(q.includes('capital of india')) return "New Delhi is the capital of India. It is located in the northern part of the country and serves as the seat of the central government.";
-  if(q.includes('capital of')) return "Capital cities are the seats of government for each country. For example, New Delhi is India's capital, Washington DC is the USA's capital, Beijing is China's capital, and London is the UK's capital.";
-  if(q.includes('india')) return "India is a country in South Asia and is the world's largest democracy. It has a population of over 1.4 billion people and is known for its rich culture, history, and growing technology industry.";
-  if(q.includes('joke')) return "Why do programmers prefer dark mode? Because light attracts bugs! Here is another one: Why did the computer go to the doctor? Because it had a virus!";
-  if(q.includes('fun fact')) return "Here is a fun fact! The first computer bug was an actual real insect. In 1947, Grace Hopper found a moth stuck inside a Harvard computer, and that is where the term debugging in programming comes from!";
-  if(q.includes('math') || q.includes('mathematics')) return "Mathematics is the study of numbers, quantities, shapes, and patterns. It is the foundation of computer science, physics, and engineering. Key areas include algebra, geometry, calculus, and statistics.";
-  if(q.includes('science')) return "Science is the systematic study of the natural world through observation and experimentation. It includes computer science, physics, chemistry, biology, and many other fascinating fields.";
-  if(q.includes('history of computer')) return "The history of computers began with Charles Babbage who designed the first mechanical computer called the Analytical Engine in the 1830s. The first electronic computer ENIAC was built in 1945. Since then computers have become smaller, faster, and more powerful.";
+    return "That is a great question! I can answer about BCA subjects, internet, AI, computers, and general knowledge. Please try asking something more specific!";
+  }
 
-  return "That is an interesting question! I can answer questions about BCA subjects, internet, programming languages, AI, computers, and general knowledge. Please try asking something more specific and I will do my best to help!";
-}
+  function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-IN';
+    utter.rate = 0.95;
+    utter.pitch = 1.1;
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(v => v.name.toLowerCase().includes('female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female'));
+    if (femaleVoice) utter.voice = femaleVoice;
+    window.speechSynthesis.speak(utter);
+  }
 
-function speak(text){
-  if(!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  var utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'en-IN';
-  utter.rate = 0.92;
-  utter.pitch = 1.1;
-  var voices = window.speechSynthesis.getVoices();
-  var femaleVoice = voices.find(function(v){return v.name.toLowerCase().includes('female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female');});
-  if(femaleVoice) utter.voice = femaleVoice;
-  window.speechSynthesis.speak(utter);
-}
+  function askQuick(question) {
+    document.getElementById('youText').textContent = question;
+    document.getElementById('youText').classList.remove('placeholder');
+    getAIResponse(question);
+  }
 
-function ask(question){
-  setYou(question);
-  respond(question);
-}
+  function sendTyped() {
+    const input = document.getElementById('typeInput');
+    const text = input.value.trim();
+    if (!text) return;
+    document.getElementById('youText').textContent = text;
+    document.getElementById('youText').classList.remove('placeholder');
+    input.value = '';
+    getAIResponse(text);
+  }
 
-function sendTyped(){
-  var input = document.getElementById('typeInput');
-  var text = input.value.trim();
-  if(!text) return;
-  setYou(text);
-  input.value = '';
-  respond(text);
-}
-
-window.speechSynthesis && window.speechSynthesis.getVoices();
+  // Load voices
+  window.speechSynthesis && window.speechSynthesis.getVoices();
 </script>
 </body>
 </html>
