@@ -199,17 +199,25 @@ function respond(query){
   document.getElementById('micBtn').className='mic-btn speaking';
   document.getElementById('micBtn').textContent='💜';
   document.getElementById('waveform').classList.add('active','speaking');
-  var GEMINI_KEY = 'AIzaSyDYvG70VA_a6bNWYmB_w_ROqgm5TzDKtic';
-  fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY, {
+  var GROQ_KEY = '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';
+  fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {
+      'Authorization': 'Bearer ' + GROQ_KEY,
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({
-      contents: [{parts: [{text: 'You are ARIA, a friendly voice assistant for a BCA college project. Answer in 2 to 3 sentences only. No bullet points, no markdown, just plain natural spoken sentences. Question: ' + query}]}]
+      model: 'llama3-8b-8192',
+      messages: [
+        {role: 'system', content: 'You are ARIA, a friendly voice assistant for a BCA college project. Answer in 2 to 3 sentences only. No bullet points, no markdown, just plain natural spoken sentences.'},
+        {role: 'user', content: query}
+      ],
+      max_tokens: 150
     })
   })
   .then(function(r){return r.json();})
   .then(function(data){
-    var reply = data.candidates[0].content.parts[0].text;
+    var reply = data.choices[0].message.content;
     setAria(reply);
     speak(reply);
     document.getElementById('micBtn').className='mic-btn';
